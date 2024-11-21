@@ -1,0 +1,58 @@
+---
+title: "ANALIZA REDUNDANCJI (RDA)"
+output: html_notebook
+---
+
+ *Ctrl+Shift+Enter* - run
+ *Ctrl+Alt+I* - insert chunk
+ *Ctrl+Shift+K* - preview
+
+Ładowanie bazy
+```{r}
+wine <- read.csv("C:/Users/Arek/PycharmProjects/Statistics-Algebra/Lab07 - RDA wine in R/wineR3.csv")
+str(wine)
+```
+Statystyka głównych składowych (PCA) 
+```{r}
+wine.PCA <- princomp(wine)
+summary(wine.PCA)
+```
+```{r}
+colnames(wine) <- c("Alcohol", "Malic.acid", "Ash", "Acl", "Mg", "Phenols", "Flavanoids", "Nonflavanoid.phenols", "Proanth", "Color.int", "Hue", "OD", "Proline", "Wine")
+```
+Ładowanie biblioteki vegan i niezbędnych pakietów do analizy RDA. Wyniki modelowania RDA (wartości własne RDA zmiennych, korelacja r2 z osią PC1 i całego modelu RDA)
+```{r}
+library(vegan)
+wine.rda <- rda(wine ~ Alcohol + Malic.acid + Ash + Acl + Mg + Phenols + Flavanoids + Nonflavanoid.phenols + Proanth + Color.int + Hue + OD + Proline, data = wine, scale = T)
+wine.rda
+```
+```{r}
+RsquareAdj(wine.rda)
+```
+Wykres osypiska RDA i miary modelu RDA (test permutacji, wariancja, współczynnik F i poziom istotności).
+```{r}
+screeplot(wine.rda)
+```
+```{r}
+signif.full <- anova.cca(wine.rda, parallel=getOption("mc.cores"))
+signif.full
+```
+Diagnostyka modelu. Funkcja vif.cca podaje współczynniki inflacji wariancji dla każdej zmiennej w modelu. Powinny być < 10. 
+```{r}
+vif.cca(wine.rda)
+```
+Wykres osi współrzędnych i ordynacji RDA oraz histogramy poszczególnych ordynacji RDA1 - ….RDA13 (zamieść tylko 2 pierwsze)
+```{r}
+plot(wine.rda, scaling=3)
+```
+```{r}
+load.rda <- scores(wine.rda, choices=c(1:3), display="species")
+outliers <- function(x, z) {
+  lims <- mean(x) + c(-1, 1) * z * sd(x)
+  x[x < lims[1] | x > lims[2]]
+}
+hist(load.rda[,1], main="Loadings on RDA1")
+```
+```{r}
+hist(load.rda[,2], main="Loadings on RDA2")
+```
