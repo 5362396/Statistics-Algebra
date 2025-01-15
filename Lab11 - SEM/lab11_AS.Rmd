@@ -1,0 +1,75 @@
+---
+title: "MODELOWANIE RÓWNAŃ STRUKTURALNYCH (SEM)"
+output: html_notebook
+---
+
+ *Ctrl+Shift+Enter* - run
+ *Ctrl+Alt+R* - run all
+ *Ctrl+Alt+I* - insert chunk
+ *Ctrl+Shift+K* - preview
+
+Ładowanie bazy
+```{r}
+processdata <- read.csv("C:/Users/Arek/PycharmProjects/Statistics-Algebra/Lab11 - SEM/VLagun_sem.csv")
+str(processdata)
+```
+Ładowanie biblioteki lavaan
+```{r}
+library(lavaan)
+```
+Specyfikacja modelu
+```{r}
+model <- '
+  SS ~ wind + depth
+  salinity ~ depth
+  PhytoBiomass ~ temp + SS + salinity 
+
+  depth ~~ depth
+  wind ~~ wind
+  temp ~~ temp
+  
+  temp ~~ depth + wind
+  depth ~~ wind
+  
+  salinity ~~ salinity
+  SS ~~ SS
+  PhytoBiomass ~~ PhytoBiomass
+  
+  SS ~~ salinity
+'
+```
+Uruchomienie analizy
+```{r}
+fit <- lavaan(model, data=processdata)
+summary(fit, fit.measures=TRUE, standardized=TRUE, rsquare=TRUE)
+```
+Przedziały ufności
+```{r}
+parameterEstimates(fit)
+```
+Zestaw miar dopasowania
+```{r}
+fitMeasures(fit)
+```
+Indeksy modyfikacji
+```{r}
+modificationIndices(fit)
+```
+Diagram ścieżek semPlot
+```{r}
+library("semPlot")
+semPaths(fit, what="paths", whatLabels="par", style="lisrel", layout="tree", rotation=2)
+```
+Diagram ścieżek lavaanPlot
+```{r}
+library("lavaanPlot")
+lavaanPlot(
+  model = fit,
+  node_options = list(shape="box", fontname="Helvetica"),
+  edge_options = list(color="grey"),
+  coefs = TRUE,
+  covs = TRUE,
+  stars = c("regress")
+)
+```
+
